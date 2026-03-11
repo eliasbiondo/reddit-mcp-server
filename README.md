@@ -61,10 +61,10 @@ Run the server:
 
 ```bash
 # stdio transport (default)
-uv run reddit-mcp-server
+uv run reddit-no-auth-mcp-server
 
 # HTTP transport
-uv run reddit-mcp-server \
+uv run reddit-no-auth-mcp-server \
   --transport streamable-http \
   --port 8000
 ```
@@ -110,7 +110,7 @@ Add to your `.cursor/mcp.json`:
       "command": "uv",
       "args": [
         "--directory", "/path/to/reddit-mcp-server",
-        "run", "reddit-mcp-server"
+        "run", "reddit-no-auth-mcp-server"
       ]
     }
   }
@@ -213,7 +213,7 @@ All settings can be configured via environment variables:
 CLI arguments take precedence over environment variables:
 
 ```bash
-reddit-mcp-server \
+uv run reddit-no-auth-mcp-server \
   --transport streamable-http \
   --port 9000 \
   --log-level DEBUG

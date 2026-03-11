@@ -34,7 +34,7 @@ Repository = "https://github.com/eliasbiondo/reddit-mcp-server"
 Issues = "https://github.com/eliasbiondo/reddit-mcp-server/issues"
 
 [project.scripts]
-reddit-mcp-server = "reddit_mcp_server.adapters.inbound.mcp_cli_adapter:main"
+reddit-no-auth-mcp-server = "reddit_mcp_server.adapters.inbound.mcp_cli_adapter:main"
 
 [dependency-groups]
 dev = [
