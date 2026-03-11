@@ -1167,7 +1167,7 @@ wheels = [
 ]
 
 [[package]]
-name = "reddit-mcp-server"
+name = "reddit-no-auth-mcp-server"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
