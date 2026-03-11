@@ -1168,7 +1168,7 @@ wheels = [
 
 [[package]]
 name = "reddit-no-auth-mcp-server"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },
