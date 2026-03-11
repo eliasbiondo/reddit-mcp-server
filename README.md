@@ -1,8 +1,27 @@
 # Reddit MCP Server
 
-A [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server that provides AI assistants with access to Reddit data. Built on top of [redd](https://github.com/eliasbiondo/redd) — no API keys required.
+[![PyPI](https://img.shields.io/pypi/v/reddit-no-auth-mcp-server?label=pypi&cacheSeconds=3600)](https://pypi.org/project/reddit-no-auth-mcp-server/)
+[![License: MIT](https://img.shields.io/github/license/eliasbiondo/reddit-mcp-server?cacheSeconds=3600)](https://github.com/eliasbiondo/reddit-mcp-server/blob/main/LICENSE)
 
-## Features
+A [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server that
+provides AI assistants with access to Reddit data. Built on top of
+[redd](https://github.com/eliasbiondo/redd) — no API keys required.
+
+---
+
+## Table of Contents
+
+1. [Features](#1-features)
+2. [Quick Start](#2-quick-start)
+3. [Available Tools](#3-available-tools)
+4. [Configuration](#4-configuration)
+5. [Architecture](#5-architecture)
+6. [Contributing](#6-contributing)
+7. [License](#7-license)
+
+---
+
+## 1. Features
 
 - 🔍 **Search** — Search all of Reddit or within a specific subreddit
 - 📰 **Subreddit Posts** — Browse hot, top, new, or rising posts from any subreddit
@@ -12,28 +31,47 @@ A [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server that p
 
 No API keys, no authentication, no browser required. Just install and run.
 
-## Quick Start
+---
 
-### Install
+## 2. Quick Start
+
+### 2.1. Using `uvx` (recommended)
+
+The fastest way to run the server — no clone needed:
 
 ```bash
-# Clone and install
+# stdio transport (default, for Claude Desktop / Cursor / etc.)
+uvx reddit-no-auth-mcp-server
+
+# HTTP transport
+uvx reddit-no-auth-mcp-server \
+  --transport streamable-http \
+  --port 8000
+```
+
+### 2.2. From source
+
+```bash
 git clone https://github.com/eliasbiondo/reddit-mcp-server.git
 cd reddit-mcp-server
 uv sync
 ```
 
-### Run
+Run the server:
 
 ```bash
-# stdio transport (default, for Claude Desktop / Cursor / etc.)
-reddit-mcp-server
+# stdio transport (default)
+uv run reddit-mcp-server
 
 # HTTP transport
-reddit-mcp-server --transport streamable-http --port 8000
+uv run reddit-mcp-server \
+  --transport streamable-http \
+  --port 8000
 ```
 
-### Configure with Claude Desktop
+### 2.3. MCP Client Configuration
+
+#### Claude Desktop
 
 Add to your `claude_desktop_config.json`:
 
@@ -41,19 +79,29 @@ Add to your `claude_desktop_config.json`:
 {
   "mcpServers": {
     "reddit": {
-      "command": "uv",
-      "args": [
-        "--directory", "/path/to/reddit-mcp-server",
-        "run", "reddit-mcp-server"
-      ]
+      "command": "uvx",
+      "args": ["reddit-no-auth-mcp-server"]
     }
   }
 }
 ```
 
-### Configure with Cursor
+#### Cursor
 
 Add to your `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "reddit": {
+      "command": "uvx",
+      "args": ["reddit-no-auth-mcp-server"]
+    }
+  }
+}
+```
+
+#### From source (any MCP client)
 
 ```json
 {
@@ -69,7 +117,9 @@ Add to your `.cursor/mcp.json`:
 }
 ```
 
-## Available Tools
+---
+
+## 3. Available Tools
 
 | Tool | Description | Key Arguments |
 |------|-------------|---------------|
@@ -142,7 +192,9 @@ category: "top"       # hot, top, new
 time_filter: "all"    # hour, day, week, month, year, all
 ```
 
-## Configuration
+---
+
+## 4. Configuration
 
 All settings can be configured via environment variables:
 
@@ -161,22 +213,27 @@ All settings can be configured via environment variables:
 CLI arguments take precedence over environment variables:
 
 ```bash
-reddit-mcp-server --transport streamable-http --port 9000 --log-level DEBUG
+reddit-mcp-server \
+  --transport streamable-http \
+  --port 9000 \
+  --log-level DEBUG
 ```
 
-## Architecture
+---
+
+## 5. Architecture
 
 This project follows **hexagonal architecture** (ports & adapters):
 
 ```
 src/reddit_mcp_server/
-├── domain/              # Pure business logic, no framework imports
-│   ├── exceptions.py    # Domain exception hierarchy
-│   └── value_objects.py # Immutable config objects
-├── ports/               # Abstract interfaces (contracts)
-│   ├── config.py        # ConfigPort
-│   └── reddit.py        # RedditPort
-├── application/         # Use cases (orchestration)
+├── domain/                # Pure business logic, no framework imports
+│   ├── exceptions.py      # Domain exception hierarchy
+│   └── value_objects.py   # Immutable config objects
+├── ports/                 # Abstract interfaces (contracts)
+│   ├── config.py          # ConfigPort
+│   └── reddit.py          # RedditPort
+├── application/           # Use cases (orchestration)
 │   ├── search.py
 │   ├── search_subreddit.py
 │   ├── get_post.py
@@ -184,18 +241,27 @@ src/reddit_mcp_server/
 │   ├── get_subreddit_posts.py
 │   └── get_user_posts.py
 ├── adapters/
-│   ├── inbound/         # Presentation layer
-│   │   ├── cli.py       # CLI entry point
+│   ├── inbound/           # Presentation layer
+│   │   ├── cli.py         # CLI entry point
 │   │   ├── mcp_server.py
 │   │   ├── error_mapping.py
 │   │   ├── serialization.py
-│   │   └── mcp_tools/   # MCP tool definitions
-│   └── outbound/        # Infrastructure layer
+│   │   └── mcp_tools/     # MCP tool definitions
+│   └── outbound/          # Infrastructure layer
 │       ├── env_config.py  # ConfigPort implementation
 │       └── redd_client.py # RedditPort implementation (wraps redd)
-└── container.py         # DI composition root
+└── container.py           # DI composition root
 ```
 
-## License
+---
+
+## 6. Contributing
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) for
+guidelines on setting up the project, running tests, and submitting changes.
+
+---
+
+## 7. License
 
 [MIT](LICENSE)

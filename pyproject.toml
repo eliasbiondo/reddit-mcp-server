@@ -1,15 +1,37 @@
 [project]
-name = "reddit-mcp-server"
+name = "reddit-no-auth-mcp-server"
 version = "0.1.0"
-description = "A Model Context Protocol Server for Reddit"
+description = "A Model Context Protocol Server for Reddit — browse, search, and read Reddit from any MCP client. No API keys required."
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.12"
+authors = [
+    { name = "Elias Biondo", email = "contato@eliasbiondo.com" },
+]
+keywords = ["reddit", "mcp", "model-context-protocol", "ai", "llm", "scraper", "redd"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
 
 dependencies = [
     "fastmcp>=3.0.0",
     "python-dotenv>=1.1.1",
     "redd>=0.2.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/eliasbiondo/reddit-mcp-server"
+Repository = "https://github.com/eliasbiondo/reddit-mcp-server"
+Issues = "https://github.com/eliasbiondo/reddit-mcp-server/issues"
 
 [project.scripts]
 reddit-mcp-server = "reddit_mcp_server.adapters.inbound.mcp_cli_adapter:main"
