@@ -4,7 +4,10 @@ import argparse
 import os
 from unittest.mock import patch
 
+import pytest
+
 from reddit_mcp_server.adapters.outbound.env_config_adapter import EnvConfigAdapter
+from reddit_mcp_server.domain.exceptions import ConfigurationError
 
 
 class TestEnvConfigAdapterDefaults:
@@ -28,6 +31,48 @@ class TestEnvConfigAdapterDefaults:
         assert config.reddit.timeout == 10.0
         assert config.reddit.throttle_min == 1.0
         assert config.reddit.throttle_max == 2.0
+        assert config.reddit.client_id is None
+        assert config.reddit.client_secret is None
+        assert config.reddit.user_agent is None
+        assert config.reddit.oauth_enabled is False
+
+
+class TestEnvConfigAdapterOAuth:
+    def test_oauth_credentials_from_env(self):
+        env = {
+            "REDDIT_CLIENT_ID": "abc",
+            "REDDIT_CLIENT_SECRET": "xyz",
+            "REDDIT_USER_AGENT": "python:my-bot:v1 (by /u/me)",
+        }
+        with patch.dict(os.environ, env, clear=True):
+            config = EnvConfigAdapter().load()
+
+        assert config.reddit.client_id == "abc"
+        assert config.reddit.client_secret == "xyz"
+        assert config.reddit.user_agent == "python:my-bot:v1 (by /u/me)"
+        assert config.reddit.oauth_enabled is True
+
+    def test_blank_credentials_are_treated_as_unset(self):
+        env = {"REDDIT_CLIENT_ID": "  ", "REDDIT_CLIENT_SECRET": ""}
+        with patch.dict(os.environ, env, clear=True):
+            config = EnvConfigAdapter().load()
+
+        assert config.reddit.client_id is None
+        assert config.reddit.oauth_enabled is False
+
+    @pytest.mark.parametrize(
+        ("env", "missing"),
+        [
+            ({"REDDIT_CLIENT_ID": "abc"}, "REDDIT_CLIENT_SECRET"),
+            ({"REDDIT_CLIENT_SECRET": "xyz"}, "REDDIT_CLIENT_ID"),
+        ],
+    )
+    def test_partial_credentials_are_rejected(self, env, missing):
+        with (
+            patch.dict(os.environ, env, clear=True),
+            pytest.raises(ConfigurationError, match=f"{missing} is not set"),
+        ):
+            EnvConfigAdapter().load()
 
 
 class TestEnvConfigAdapterEnvVars:

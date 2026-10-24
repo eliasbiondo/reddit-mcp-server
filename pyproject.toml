@@ -1,7 +1,7 @@
 [project]
 name = "reddit-no-auth-mcp-server"
 version = "0.1.2"
-description = "A Model Context Protocol Server for Reddit — browse, search, and read Reddit from any MCP client. No API keys required."
+description = "A Model Context Protocol Server for Reddit — browse, search, and read Reddit from any MCP client, with or without Reddit API credentials."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.12"
@@ -24,6 +24,7 @@ classifiers = [
 
 dependencies = [
     "fastmcp>=3.0.0",
+    "httpx>=0.27.0",
     "python-dotenv>=1.1.1",
     "redd>=0.2.0",
 ]

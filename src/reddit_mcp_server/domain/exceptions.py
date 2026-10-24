@@ -17,11 +17,16 @@ class HttpError(RedditMCPError):
     def __init__(self, status_code: int, url: str, detail: str = ""):
         self.status_code = status_code
         self.url = url
+        self.detail = detail
         super().__init__(f"HTTP {status_code} for {url}" + (f": {detail}" if detail else ""))
 
 
 class NetworkError(RedditMCPError):
     """Network-level failure (connection, timeout)."""
+
+
+class AuthenticationError(RedditMCPError):
+    """Reddit OAuth authentication failed (bad credentials, rejected token request)."""
 
 
 # ── Data ──────────────────────────────────────────────────────────────────────
