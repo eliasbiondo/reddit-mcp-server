@@ -88,9 +88,10 @@ jobs:
 
       - name: Commit version bump
         run: |
-          git add pyproject.toml
+          uv lock
+          git add pyproject.toml uv.lock
           git commit -m "chore: bump version to ${{ steps.version.outputs.new }} [skip ci]"
-          git pull --rebase
+          git pull --rebase --autostash
           git push
 
       - name: Create tag and release
