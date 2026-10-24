@@ -132,14 +132,18 @@ Add to your `.cursor/mcp.json`:
 
 ## 3. Available Tools
 
-| Tool | Description | Key Arguments |
-|------|-------------|---------------|
-| `search` | Search Reddit for posts | `query`, `limit`, `sort` |
-| `search_subreddit` | Search within a subreddit | `subreddit`, `query`, `limit`, `sort` |
-| `get_post` | Get post details + comment tree | `permalink` |
-| `get_subreddit_posts` | Get subreddit listing | `subreddit`, `limit`, `category`, `time_filter` |
-| `get_user` | Get user's activity feed | `username`, `limit` |
-| `get_user_posts` | Get user's submitted posts | `username`, `limit`, `category`, `time_filter` |
+| Tool | Description | Key Arguments | Returns |
+|------|-------------|---------------|---------|
+| `search` | Search Reddit for posts | `query`, `limit`, `sort` | `{"results": [...]}` |
+| `search_subreddit` | Search within a subreddit | `subreddit`, `query`, `limit`, `sort` | `{"results": [...]}` |
+| `get_post` | Get post details + comment tree | `permalink` | post object |
+| `get_subreddit_posts` | Get subreddit listing | `subreddit`, `limit`, `category`, `time_filter` | `{"posts": [...]}` |
+| `get_user` | Get user's activity feed | `username`, `limit` | `{"items": [...]}` |
+| `get_user_posts` | Get user's submitted posts | `username`, `limit`, `category`, `time_filter` | `{"posts": [...]}` |
+
+Every tool returns a JSON object (never a bare array) that matches its advertised
+`outputSchema`, so MCP-to-OpenAPI bridges such as
+[mcpo](https://github.com/open-webui/mcpo) / Open WebUI can validate the response.
 
 ### Tool Details
 
