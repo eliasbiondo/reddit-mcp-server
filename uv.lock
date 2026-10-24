@@ -1172,6 +1172,7 @@ version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },
+    { name = "httpx" },
     { name = "python-dotenv" },
     { name = "redd" },
 ]
@@ -1188,6 +1189,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fastmcp", specifier = ">=3.0.0" },
+    { name = "httpx", specifier = ">=0.27.0" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "redd", specifier = ">=0.2.0" },
 ]

@@ -23,6 +23,14 @@ class RedditConfig:
     timeout: float = 10.0
     throttle_min: float = 1.0
     throttle_max: float = 2.0
+    client_id: str | None = None
+    client_secret: str | None = None
+    user_agent: str | None = None
+
+    @property
+    def oauth_enabled(self) -> bool:
+        """Whether Reddit OAuth app credentials are configured."""
+        return bool(self.client_id and self.client_secret)
 
 
 @dataclass(frozen=True)

@@ -7,6 +7,7 @@ from reddit_mcp_server import __version__
 from reddit_mcp_server.adapters.inbound.mcp_server_adapter import McpServerAdapter
 from reddit_mcp_server.adapters.outbound.env_config_adapter import EnvConfigAdapter
 from reddit_mcp_server.container import Container
+from reddit_mcp_server.domain.exceptions import ConfigurationError
 from reddit_mcp_server.ports.inbound import InboundAdapter
 
 _EPILOG = """\
@@ -20,6 +21,9 @@ environment variables:
   REDDIT_TIMEOUT         Request timeout in seconds (default: 10.0)
   REDDIT_THROTTLE_MIN    Min delay between requests in seconds (default: 1.0)
   REDDIT_THROTTLE_MAX    Max delay between requests in seconds (default: 2.0)
+  REDDIT_CLIENT_ID       Reddit app client ID (optional, enables OAuth API access)
+  REDDIT_CLIENT_SECRET   Reddit app client secret (required with REDDIT_CLIENT_ID)
+  REDDIT_USER_AGENT      User-Agent for OAuth API requests (optional)
 
 examples:
   %(prog)s                                    Start with stdio transport
@@ -41,7 +45,9 @@ class McpCliAdapter(InboundAdapter):
         """Build the CLI argument parser with rich help and grouped options."""
         parser = argparse.ArgumentParser(
             prog="reddit-mcp-server",
-            description="🤖 Model Context Protocol server for Reddit data extraction",
+            # Keep help text ASCII-only: Windows consoles default to cp1252 and
+            # argparse crashes with UnicodeEncodeError on characters like emoji.
+            description="Model Context Protocol server for Reddit data extraction",
             epilog=_EPILOG,
             formatter_class=argparse.RawDescriptionHelpFormatter,
         )
@@ -91,8 +97,10 @@ class McpCliAdapter(InboundAdapter):
         args = parser.parse_args()
 
         # Load configuration
-        config_adapter = EnvConfigAdapter(cli_args=args)
-        config = config_adapter.load()
+        try:
+            config = EnvConfigAdapter(cli_args=args).load()
+        except ConfigurationError as exc:
+            parser.error(str(exc))
 
         # Configure logging
         logging.basicConfig(
@@ -101,7 +109,10 @@ class McpCliAdapter(InboundAdapter):
         )
 
         # Build DI container
-        container = Container(config)
+        try:
+            container = Container(config)
+        except ConfigurationError as exc:
+            parser.error(str(exc))
 
         # Create and run MCP server
         server_adapter = McpServerAdapter(container)
@@ -116,7 +127,8 @@ class McpCliAdapter(InboundAdapter):
                 path=config.server.path,
             )
         else:
-            mcp.run(transport="stdio")
+            # stdio is reserved for JSON-RPC; keep the startup banner off it.
+            mcp.run(transport="stdio", show_banner=False)
 
 
 def main() -> None:

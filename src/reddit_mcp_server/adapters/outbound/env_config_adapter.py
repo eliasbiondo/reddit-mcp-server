@@ -11,6 +11,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 
+from reddit_mcp_server.domain.exceptions import ConfigurationError
 from reddit_mcp_server.domain.value_objects import (
     AppConfig,
     RedditConfig,
@@ -46,11 +47,23 @@ class EnvConfigAdapter(ConfigPort):
             path=os.environ.get("REDDIT_PATH", "/mcp"),
         )
 
+        client_id = self._env_str("REDDIT_CLIENT_ID")
+        client_secret = self._env_str("REDDIT_CLIENT_SECRET")
+        if bool(client_id) != bool(client_secret):
+            missing = "REDDIT_CLIENT_SECRET" if client_id else "REDDIT_CLIENT_ID"
+            raise ConfigurationError(
+                f"{missing} is not set. Reddit OAuth needs both REDDIT_CLIENT_ID and "
+                "REDDIT_CLIENT_SECRET; unset both to use unauthenticated access."
+            )
+
         reddit_config = RedditConfig(
             proxy=os.environ.get("REDDIT_PROXY"),
             timeout=self._resolve_float("REDDIT_TIMEOUT", 10.0),
             throttle_min=self._resolve_float("REDDIT_THROTTLE_MIN", 1.0),
             throttle_max=self._resolve_float("REDDIT_THROTTLE_MAX", 2.0),
+            client_id=client_id,
+            client_secret=client_secret,
+            user_agent=self._env_str("REDDIT_USER_AGENT"),
         )
 
         return AppConfig(server=server_config, reddit=reddit_config)
@@ -78,6 +91,12 @@ class EnvConfigAdapter(ConfigPort):
         if cli_val is not None:
             return int(cli_val)
         return self._env_int(env_key, default)
+
+    @staticmethod
+    def _env_str(key: str) -> str | None:
+        """Get a stripped string from an environment variable; empty means unset."""
+        val = os.environ.get(key, "").strip()
+        return val or None
 
     @staticmethod
     def _env_int(key: str, default: int) -> int:

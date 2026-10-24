@@ -11,11 +11,38 @@ from fastmcp.exceptions import ToolError
 from redd import HttpError, NotFoundError, ParseError, ReddError
 
 from reddit_mcp_server.domain.exceptions import (
+    AuthenticationError,
     ConfigurationError,
+    NetworkError,
     RedditMCPError,
 )
+from reddit_mcp_server.domain.exceptions import HttpError as DomainHttpError
+from reddit_mcp_server.domain.exceptions import NotFoundError as DomainNotFoundError
+from reddit_mcp_server.domain.exceptions import ParseError as DomainParseError
 
 logger = logging.getLogger(__name__)
+
+_CREDENTIALS_HINT = "Check REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET."
+
+
+def _http_error_message(status_code: int, detail: str = "") -> str:
+    """Build an actionable message for an HTTP error status returned by Reddit."""
+    status = f"HTTP {status_code}" + (f": {detail}" if detail else "")
+
+    if status_code == 403:
+        return (
+            f"Reddit refused the request ({status}). Reddit blocks unauthenticated "
+            "requests from many networks; set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET "
+            "to use Reddit's OAuth API (see the README). If credentials are already "
+            "configured, the subreddit, post, or user may be private, quarantined, or banned."
+        )
+    if status_code == 401:
+        return f"Reddit rejected the request as unauthorized ({status}). {_CREDENTIALS_HINT}"
+    if status_code == 429:
+        return f"Reddit rate limit exceeded ({status}). Wait a minute and try again."
+    if status_code >= 500:
+        return f"Reddit is temporarily unavailable ({status}). Please try again later."
+    return f"Reddit returned an error ({status})."
 
 
 class McpErrorMapper:
@@ -38,18 +65,34 @@ class McpErrorMapper:
         """
         prefix = f"[{context}] " if context else ""
 
-        if isinstance(exception, NotFoundError):
+        if isinstance(exception, NotFoundError | DomainNotFoundError):
             raise ToolError(
                 f"{prefix}Resource not found. Please check the username, subreddit, or permalink."
             ) from exception
 
-        if isinstance(exception, HttpError):
+        if isinstance(exception, AuthenticationError):
             raise ToolError(
-                f"{prefix}HTTP error ({exception.status_code}). "
-                "Reddit may be temporarily unavailable. Please try again later."
+                f"{prefix}Reddit OAuth authentication failed. {exception}"
             ) from exception
 
-        if isinstance(exception, ParseError):
+        if isinstance(exception, DomainHttpError):
+            message = _http_error_message(exception.status_code, exception.detail)
+            raise ToolError(f"{prefix}{message}") from exception
+
+        if isinstance(exception, NetworkError):
+            raise ToolError(
+                f"{prefix}{exception}. Check your network connection or REDDIT_PROXY."
+            ) from exception
+
+        if isinstance(exception, HttpError):
+            if exception.status_code == 0:
+                raise ToolError(
+                    f"{prefix}Request to Reddit failed: {exception}. "
+                    "Check your network connection or REDDIT_PROXY."
+                ) from exception
+            raise ToolError(f"{prefix}{_http_error_message(exception.status_code)}") from exception
+
+        if isinstance(exception, ParseError | DomainParseError):
             raise ToolError(
                 f"{prefix}Failed to parse Reddit response. The data format may have changed."
             ) from exception
