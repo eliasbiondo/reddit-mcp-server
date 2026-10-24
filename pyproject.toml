@@ -1,6 +1,6 @@
 [project]
 name = "reddit-no-auth-mcp-server"
-version = "0.1.2"
+version = "0.2.0"
 description = "A Model Context Protocol Server for Reddit — browse, search, and read Reddit from any MCP client, with or without Reddit API credentials."
 readme = "README.md"
 license = { text = "MIT" }
