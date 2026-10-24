@@ -1,11 +1,12 @@
 """Search-related MCP tool registrations."""
 
-from typing import Any
-
 from fastmcp import Context, FastMCP
 
 from reddit_mcp_server.adapters.inbound.mcp_error_mapping import McpErrorMapper
-from reddit_mcp_server.adapters.inbound.mcp_serialization import McpSerializer
+from reddit_mcp_server.adapters.inbound.mcp_serialization import (
+    McpSerializer,
+    SearchResultsResponse,
+)
 from reddit_mcp_server.adapters.inbound.mcp_tools._base import McpToolRegistrar
 from reddit_mcp_server.application.search_service import SearchService
 
@@ -35,7 +36,9 @@ class McpSearchToolRegistrar(McpToolRegistrar):
                 "    limit: Maximum number of results to return "
                 "(default: 25, max: 100)\n"
                 "    sort: Sort order for results "
-                "(relevance, hot, top, new, comments)"
+                "(relevance, hot, top, new, comments)\n\n"
+                "Returns:\n"
+                "    An object with a 'results' array."
             ),
         )
         async def reddit_search(
@@ -43,10 +46,10 @@ class McpSearchToolRegistrar(McpToolRegistrar):
             ctx: Context,
             limit: int = 25,
             sort: str | None = None,
-        ) -> list[dict[str, Any]]:
+        ) -> SearchResultsResponse:
             try:
                 results = await service.search(query, limit=limit, sort=sort)
-                return McpSerializer.serialize_list(results)
+                return McpSerializer.search_results(results)
             except Exception as e:
                 McpErrorMapper.map(e, "reddit_search")
 
@@ -61,7 +64,9 @@ class McpSearchToolRegistrar(McpToolRegistrar):
                 "    limit: Maximum number of results to return "
                 "(default: 25, max: 100)\n"
                 "    sort: Sort order for results "
-                "(relevance, hot, top, new, comments)"
+                "(relevance, hot, top, new, comments)\n\n"
+                "Returns:\n"
+                "    An object with a 'results' array."
             ),
         )
         async def reddit_search_subreddit(
@@ -70,9 +75,9 @@ class McpSearchToolRegistrar(McpToolRegistrar):
             ctx: Context,
             limit: int = 25,
             sort: str | None = None,
-        ) -> list[dict[str, Any]]:
+        ) -> SearchResultsResponse:
             try:
                 results = await service.search_subreddit(subreddit, query, limit=limit, sort=sort)
-                return McpSerializer.serialize_list(results)
+                return McpSerializer.search_results(results)
             except Exception as e:
                 McpErrorMapper.map(e, "reddit_search_subreddit")

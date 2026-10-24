@@ -39,3 +39,11 @@ class TestMcpSerializer:
 
     def test_serialize_list_empty(self):
         assert McpSerializer.serialize_list([]) == []
+
+    def test_list_responses_are_objects(self):
+        models = [_FakeModel(name="a", value=1)]
+
+        assert McpSerializer.post_list(models) == {"posts": [{"name": "a", "value": 1}]}
+        assert McpSerializer.search_results(models) == {"results": [{"name": "a", "value": 1}]}
+        assert McpSerializer.user_activity(models) == {"items": [{"name": "a", "value": 1}]}
+        assert McpSerializer.post_list([]) == {"posts": []}

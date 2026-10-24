@@ -38,6 +38,7 @@ reddit-no-auth-mcp-server = "reddit_mcp_server.adapters.inbound.mcp_cli_adapter:
 
 [dependency-groups]
 dev = [
+    "jsonschema>=4.0.0",
     "pre-commit>=4.2.0",
     "pytest>=8.3.5",
     "pytest-asyncio>=0.26.0",
